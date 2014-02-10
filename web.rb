@@ -42,13 +42,14 @@ get '/endcache' do
 
     if now.to_datetime < open.to_datetime
         open_s = open.strftime('%H:%M:%S')
-        "not yet due: now it's #{now_s}, window will open at #{open_s}"
+        "<h3>Tor noch nicht offen</h3>Momentane Zeit: #{now_s}<br>Tor öffnet sich um #{open_s}"
     elsif now.to_datetime > close.to_datetime
         close_s = close.strftime('%H:%M:%S')
-        "already expired: now it's #{now_s}, window closed at #{close_s}"
+        "<h3>Tor schon wieder geschlossen</h3><br>Momentante Zeit: #{now_s}</br>Tor wurde geschlossen um #{close_s}"+
+        "<p>Damit gehts leider nicht zum fantastischen letzten Ziel</p>"
     else
         coords = HTMLEntities.new.encode(ENV['FINAL_TARGET_LATLON'])
-        "Letzte Koordinaten: <b>#{coords}"
+        "<h3>Letzte Koordinaten</h3><b><pre>#{coords}</pre></b>"
     end
 end
 
@@ -58,9 +59,10 @@ post '/startcache' do
     open_s = open.to_s
     open_64 = Base64.encode64(open_s)
     cookies[:openval] = open_64
-    coords = HTMLEntities.new.encode("Next Target: #{ENV['FINAL_TARGET_LATLON']}")
-    "Der Timer wurde gestartet<br>" +
-    "#{coords}"
+    coords = HTMLEntities.new.encode("#{ENV['FINAL_TARGET_LATLON']}")
+    "<h3>Der Timer wurde gestartet</h3>" +
+    "Nächstes Ziel:</br>" +
+    "<b><pre>#{coords}</pre></b>"
 end
 
 __END__
