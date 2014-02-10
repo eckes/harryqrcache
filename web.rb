@@ -1,29 +1,58 @@
 require 'sinatra'
 require "sinatra/cookies"
 require "base64"
+require "htmlentities"
+
+class Numeric
+  def duration
+    secs  = self.to_int
+    mins  = secs / 60
+    hours = mins / 60
+    days  = hours / 24
+
+    if days > 0
+      "#{days} days and #{hours % 24} hours"
+    elsif hours > 0
+      "#{hours} hours and #{mins % 60} minutes"
+    elsif mins > 0
+      "#{mins} minutes and #{secs % 60} seconds"
+    elsif secs >= 0
+      "#{secs} seconds"
+    end
+  end
+end
 
 get '/' do
-  "openval: #{cookies[:openval]}" +
-  "closeval: #{cookies[:closeval]}"
+    "startpage"
 end
 
-get '/get' do
-    "open: #{cookies[:window_open]}"
-    "close: #{cookies[:window_close]}"
+get '/endcache' do
+    open_64 = cookies[:openval]
+    open_s = Base64.decode64(open_64)
+    open = DateTime.parse(open_s)
+    close = open.to_time + eval(ENV['WINDOW_CLOSE_DELAY'])
+
+    now = DateTime.now.to_datetime
+    now_s = now.strftime('%H:%M:%S')
+
+    if now.to_datetime < open.to_datetime
+        open_s = open.strftime('%H:%M:%S')
+        "not yet due: now it's #{now_s}, window will open at #{open_s}"
+    elsif now.to_datetime > close.to_datetime
+        close_s = close.strftime('%H:%M:%S')
+        "already expired: now it's #{now_s}, window closed at #{close_s}"
+    else
+        coords = HTMLEntities.new.encode(ENV['TARGET_LATLON'])
+        "Letzte Koordinaten: <b>#{coords}"
+    end
 end
 
-get '/set' do
+get '/startcache' do
     now = DateTime.now.to_time
-    open =  now + 1 * 60 * 60 # 1 hour in seconds
-    close = open + 10 * 60    # 10 minutes in seconds
+    open =  (now + eval(ENV['WINDOW_OPEN_DELAY'])).to_datetime
     open_s = open.to_s
-    close_s = (open + 10 * 60).to_s
     open_64 = Base64.encode64(open_s)
-    close_64 = Base64.encode64(close_s)
-    "Now: #{now.to_s}<br>" +
-    "Open: #{open.to_s} &rarr; #{open_64}<br>" +
-    "Close: #{close.to_s} &rarr; #{close_64}"
     cookies[:openval] = open_64
-    cookies[:closeval] = close_64
-    redirect to('/')
+    "Now: #{now.to_s}<br>" +
+    "Open: #{open.to_s} &rarr; #{open_64}<br>"
 end

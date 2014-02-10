@@ -5,6 +5,7 @@ GEM
     daemons (1.1.9)
     eventmachine (1.0.3)
     eventmachine (1.0.3-x86-mingw32)
+    htmlentities (4.3.1)
     multi_json (1.8.4)
     rack (1.5.2)
     rack-protection (1.5.2)
@@ -33,6 +34,7 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
+  htmlentities
   sinatra (~> 1.4.4)
   sinatra-contrib
   thin
