@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'sinatra'
 require "sinatra/cookies"
 require "base64"
@@ -23,7 +24,11 @@ class Numeric
 end
 
 get '/' do
-    "startpage"
+    erb :start
+end
+
+get '/startcache' do
+    redirect to '/'
 end
 
 get '/endcache' do
@@ -42,17 +47,44 @@ get '/endcache' do
         close_s = close.strftime('%H:%M:%S')
         "already expired: now it's #{now_s}, window closed at #{close_s}"
     else
-        coords = HTMLEntities.new.encode(ENV['TARGET_LATLON'])
+        coords = HTMLEntities.new.encode(ENV['FINAL_TARGET_LATLON'])
         "Letzte Koordinaten: <b>#{coords}"
     end
 end
 
-get '/startcache' do
+post '/startcache' do
     now = DateTime.now.to_time
     open =  (now + eval(ENV['WINDOW_OPEN_DELAY'])).to_datetime
     open_s = open.to_s
     open_64 = Base64.encode64(open_s)
     cookies[:openval] = open_64
-    "Now: #{now.to_s}<br>" +
-    "Open: #{open.to_s} &rarr; #{open_64}<br>"
+    coords = HTMLEntities.new.encode("Next Target: #{ENV['FINAL_TARGET_LATLON']}")
+    "Der Timer wurde gestartet<br>" +
+    "#{coords}"
 end
+
+__END__
+@@ layout
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        </head>
+  <body>
+   <%= yield %>
+  </body>
+</html>
+
+@@ start
+<H1>Startseite</H1>
+<ul>
+    <li>nach Klicken auf STARTEN startet ein Timer</li>
+    <li>vor Ablauf dieses Timers müssen drei Ziele erreicht werden</li>
+    <li>am dritten Ziel bekommt man die Koordinaten für den tollen Endpunkt</li>
+    <li>wenn man zu früh am dritten Ziel ist, muss man warten (d.h. das Tor zum Endpunkt ist noch zu)</li>
+    <li>wenn man zu spät am dritten Ziel ist, kriegt man die tollen Endkoordinaten nicht (d.h. das Tor zum Endpunkt ist schon wieder zu)</li>
+</ul>
+<H2>Alles Klar?</H2>
+<form method="POST" action="startcache">
+    <button type="submit" value="start">STARTEN</button>
+</form>
+
