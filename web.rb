@@ -7,6 +7,50 @@ require "htmlentities"
 
 require "slim"
 
+require 'omniauth-openid'
+require 'openid'
+require 'openid/store/filesystem'
+require 'gapps_openid'
+
+use Rack::Session::Cookie, :secret => 'supers3cr3t'
+
+use OmniAuth::Builder do
+  provider :open_id,  :name => 'openid',
+    :identifier => 'https://www.google.com/accounts/o8/id',
+    :store => OpenID::Store::Filesystem.new('/tmp')
+end
+
+# Callback URL used when the authentication is done
+post '/auth/openid/callback' do
+  auth_details = request.env['omniauth.auth']
+  session[:email] = auth_details.info['email']
+  auth_details
+# redirect '/auth/openid/welcome'
+end
+
+get '/foo' do
+  "Hello #{session[:email]}<br>" +
+    "Session: #{session}<br>" +
+    "ENV: #{request.env}<br>"
+end
+
+get '/auth/openid/welcome' do
+  if session[:email]
+    redirect '/foo'
+  else
+    redirect '/auth/openid'
+  end
+end
+
+get '/auth/failure' do
+  params[:message]
+  # do whatever you want here.
+end
+
+OmniAuth.config.on_failure = Proc.new { |env|
+  OmniAuth::FailureEndpoint.new(env).redirect_to_failure
+}
+
 get '/' do
   slim :start
 end
