@@ -4,6 +4,7 @@ require "base64"
 require 'sinatra'
 require "sinatra/cookies"
 require "htmlentities"
+require "data_mapper"
 
 require "slim"
 
@@ -13,6 +14,16 @@ require 'openid/store/filesystem'
 require 'gapps_openid'
 
 use Rack::Session::Cookie, :secret => 'supers3cr3t'
+
+DataMapper.setup(:default, ENV['DATABASE_URL'] || "postgres://localhost/harryqrcache.db")
+
+class Setting 
+include DataMapper::Resource
+  property :id,           Serial
+  property :name,         String, :required => true
+  property :value,        String
+end
+DataMapper.finalize
 
 use OmniAuth::Builder do
   provider :open_id,  :name => 'openid',
@@ -101,11 +112,11 @@ body
 @@ start
 h1 Startseite
 ul
-li nach Klicken auf STARTEN startet ein Timer
-li vor Ablauf dieses Timers müssen drei Ziele erreicht werden
-li am dritten Ziel bekommt man die Koordinaten für den tollen Endpunkt
-li wenn man zu früh am dritten Ziel ist, muss man warten (d.h. das Tor zum Endpunkt ist noch zu)
-li wenn man zu spät am dritten Ziel ist, kriegt man die tollen Endkoordinaten nicht (d.h. das Tor zum Endpunkt ist schon wieder zu)
+  li nach Klicken auf STARTEN startet ein Timer
+  li vor Ablauf dieses Timers müssen drei Ziele erreicht werden
+  li am dritten Ziel bekommt man die Koordinaten für den tollen Endpunkt
+  li wenn man zu früh am dritten Ziel ist, muss man warten (d.h. das Tor zum Endpunkt ist noch zu)
+  li wenn man zu spät am dritten Ziel ist, kriegt man die tollen Endkoordinaten nicht (d.h. das Tor zum Endpunkt ist schon wieder zu)
 h2 Alles Klar?
 form method="POST" action="startcache"
 input.button type="submit" value="STARTEN"
@@ -118,13 +129,13 @@ p Nächstes Ziel:
 @@ notyetdue
 h1 Tor noch nicht offen
 ul
-li Momentane Zeit: #{@now_s}
+  li Momentane Zeit: #{@now_s}
   li Tor öffnet sich um #{@open_s}
 
 @@ alreadygone
 h1 Tor schon wieder geschlossen
 ul
-li Momentane Zeit: #{@now_s}
+  li Momentane Zeit: #{@now_s}
   li Tor wurde geschlossen um #{@close_s}
 p Damit gehts leider nicht zum fantastischen letzten Ziel
 
