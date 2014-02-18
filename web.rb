@@ -11,17 +11,17 @@ require "slim"
 require 'omniauth-openid'
 require 'openid'
 require 'openid/store/filesystem'
-require 'gapps_openid'
 
 use Rack::Session::Cookie, :secret => 'supers3cr3t'
 
-DataMapper.setup(:default, ENV['DATABASE_URL'] || "postgres://localhost/harryqrcache.db")
+DataMapper.setup(:default, ENV['DATABASE_URL'] || "postgres://postgres:rootroot@localhost/harryqrcache.db")
 
 class Setting 
 include DataMapper::Resource
   property :id,           Serial
   property :name,         String, :required => true
   property :value,        String
+  property :description,  String
 end
 DataMapper.finalize
 
@@ -35,19 +35,12 @@ end
 post '/auth/openid/callback' do
   auth_details = request.env['omniauth.auth']
   session[:email] = auth_details.info['email']
-  auth_details
-# redirect '/auth/openid/welcome'
-end
-
-get '/foo' do
-  "Hello #{session[:email]}<br>" +
-    "Session: #{session}<br>" +
-    "ENV: #{request.env}<br>"
+  redirect '/settings'
 end
 
 get '/auth/openid/welcome' do
   if session[:email]
-    redirect '/foo'
+    redirect '/settings'
   else
     redirect '/auth/openid'
   end
@@ -74,19 +67,21 @@ get '/endcache' do
   open_64 = cookies[:openval]
   open_s  = Base64.decode64(open_64)
   open    = DateTime.parse(open_s)
-  close   = open.to_time + eval(ENV['WINDOW_CLOSE_DELAY'])
+  closeDelay = Setting.first(:name => "WindowCloseDelay")
+  close   = open.to_time + eval(closeDelay.value)
 
   now = DateTime.now.to_datetime
   @now_s = now.strftime('%H:%M:%S')
 
+  @open_s = open.strftime('%H:%M:%S')
+  @close_s = close.strftime('%H:%M:%S')
+  @coords = ENV['FINAL_TARGET_LATLON']
+
   if now.to_datetime < open.to_datetime
-    @open_s = open.strftime('%H:%M:%S')
     slim :notyetdue
   elsif now.to_datetime > close.to_datetime
-    @close_s = close.strftime('%H:%M:%S')
     slim :alreadygone
   else
-    @coords = ENV['FINAL_TARGET_LATLON']
     slim :doorisopen
   end
 end
@@ -97,6 +92,26 @@ post '/startcache' do
   cookies[:openval] = Base64.encode64(open.to_s)
   @coords = ENV['FINAL_TARGET_LATLON']
   slim :startresponse
+end
+
+get '/settings' do
+  unless session && session[:email] && (ENV['ADMINMAILS'].include? session[:email])
+    halt 401, 'authentication required'
+  end
+  @user_name = (session[:email] == 'meliundeckes@gmail.com' && 'Eckes') || 'Harry'
+  @settings = Setting.all
+  slim :showsettings
+end
+
+post '/settings' do
+  unless session && session[:email] && (ENV['ADMINMAILS'].include? session[:email])
+    halt 401, 'authentication required'
+  end
+  params.keys.each do |key|
+    s = Setting.get(key)
+    s.update( :value => params[key])
+  end
+  redirect '/settings'
 end
 
 __END__
@@ -119,12 +134,12 @@ ul
   li wenn man zu spät am dritten Ziel ist, kriegt man die tollen Endkoordinaten nicht (d.h. das Tor zum Endpunkt ist schon wieder zu)
 h2 Alles Klar?
 form method="POST" action="startcache"
-input.button type="submit" value="STARTEN"
+  input.button type="submit" value="STARTEN"
 
 @@ startresponse
 h1 Der Timer wurde gestartet
-p Nächstes Ziel:
-  b =@coords
+h2 Nächstes Ziel:
+h3 =@coords
 
 @@ notyetdue
 h1 Tor noch nicht offen
@@ -142,5 +157,30 @@ p Damit gehts leider nicht zum fantastischen letzten Ziel
 @@ doorisopen
 h1 Letzte Koordinaten
 h2 =@coords
+h4 =@close_s
+
+@@ showsettings
+h1 Hi #{@user_name}, hier die Einstellungen
+form action="/settings" method="POST"
+  table
+    - @settings.each do |setting|
+      tr
+        td
+          label for="#{setting.id}" #{setting.name}
+        td
+          input type="text" name="#{setting.id}" value="#{setting.value}"
+        td
+          label #{setting.description}
+  input.button type="submit" value="Update Settings"
+
+@@ listsettings
+h1 Settings
+table
+  - @params.each do |param|
+    tr
+      td
+        "#{param.name}"
+      td
+        "#{param.value}"
 
 / vim: set sw=2 ts=2 enc=utf8:
