@@ -22,14 +22,8 @@ include DataMapper::Resource
 end
 DataMapper.finalize
 
-WINDOW_CLOSE_DELAY = eval(ENV['WINDOW_CLOSE_DELAY'] || Setting.first(:name => "WindowCloseDelay").value)
-WINDOW_OPEN_DELAY  = eval(ENV['WINDOW_OPEN_DELAY']  || Setting.first(:name => "WindowOpenDelay").value)
-FINAL_TARGET_LATLON= ENV['FINAL_TARGET_LATLON']|| Setting.first(:name => "FinalTargetLatLon").value
-NEXT_TARGET_LATLON = ENV['NEXT_TARGET_LATLON'] || Setting.first(:name => "NextTargetLatLon").value
-ADMINS             = ENV['ADMINS']             || Setting.first(:name => "Admins").value
 
 use Rack::Session::Cookie, :secret => 'supers3cr3t'
-
 
 use OmniAuth::Builder do
   provider :open_id,  :name => 'openid',
@@ -70,6 +64,8 @@ get '/startcache' do
 end
 
 get '/endcache' do
+  WINDOW_CLOSE_DELAY = eval(ENV['WINDOW_CLOSE_DELAY'] || Setting.first(:name => "WindowCloseDelay").value)
+  FINAL_TARGET_LATLON= ENV['FINAL_TARGET_LATLON']|| Setting.first(:name => "FinalTargetLatLon").value
   open_64 = cookies[:openval]
   open_s  = Base64.decode64(open_64)
   open    = DateTime.parse(open_s)
@@ -92,6 +88,8 @@ get '/endcache' do
 end
 
 post '/startcache' do
+  WINDOW_OPEN_DELAY  = eval(ENV['WINDOW_OPEN_DELAY']  || Setting.first(:name => "WindowOpenDelay").value)
+  NEXT_TARGET_LATLON = ENV['NEXT_TARGET_LATLON'] || Setting.first(:name => "NextTargetLatLon").value
   now = DateTime.now.to_time
   open    = (now + WINDOW_OPEN_DELAY).to_datetime
   cookies[:openval] = Base64.encode64(open.to_s)
@@ -100,6 +98,7 @@ post '/startcache' do
 end
 
 get '/private/settings' do
+  ADMINS             = ENV['ADMINS']             || Setting.first(:name => "Admins").value
   unless session && session[:email] && (ADMINS.include? session[:email])
     halt 401, '<a href="/auth/openid">authentication required</a>'
   end
@@ -109,6 +108,7 @@ get '/private/settings' do
 end
 
 post '/private/settings' do
+  ADMINS             = ENV['ADMINS']             || Setting.first(:name => "Admins").value
   unless session && session[:email] && (ADMINS.include? session[:email])
     halt 401, '<a href="/auth/openid">authentication required</a>'
   end
@@ -119,6 +119,7 @@ post '/private/settings' do
 end
 
 get '/private/addsetting' do
+  ADMINS             = ENV['ADMINS']             || Setting.first(:name => "Admins").value
   unless session && session[:email] && (ADMINS.include? session[:email])
     halt 401, '<a href="/auth/openid">authentication required</a>'
   end
@@ -126,6 +127,7 @@ get '/private/addsetting' do
 end
 
 post '/private/addsetting' do
+  ADMINS             = ENV['ADMINS']             || Setting.first(:name => "Admins").value
   unless session && session[:email] && (ADMINS.include? session[:email])
     halt 401, '<a href="/auth/openid">authentication required</a>'
   end
