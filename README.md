@@ -12,7 +12,9 @@ As soon as the token is issued, time begins to run.
 
 There could be various stations between the first and the next-to-last.
 
-The challenge is to receive this next-to-last checkpoint within a defined time window. Only if you arrive within this time window, you'll receive the coordinates for the last checkpoint. If you're too soon, you'll have to wait; if you're too late, you won't get the coordinates for the last point.
+The challenge is to receive this next-to-last checkpoint within a defined time window. 
+If one arrives on time, there shall be another QR code which calls the check page. If the token is yet and still valid, the coordinates for the last checkpoint are shown.
+If you're too soon, you'll have to wait; if you're too late, you won't get the coordinates for the last point.
 
 ## Tech stuff
 
