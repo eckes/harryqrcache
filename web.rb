@@ -12,10 +12,7 @@ require 'omniauth-openid'
 require 'openid'
 require 'openid/store/filesystem'
 
-use Rack::Session::Cookie, :secret => 'supers3cr3t'
-
-DataMapper.setup(:default, ENV['DATABASE_URL'] || "postgres://postgres:rootroot@localhost/harryqrcache.db")
-
+DataMapper.setup(:default, ENV['DATABASE_URL'] || "postgres://#{ENV['DB_USER']}:#{ENV['DB_PASSWORD']}@localhost/harryqrcache.db")
 class Setting 
 include DataMapper::Resource
   property :id,           Serial
@@ -24,6 +21,15 @@ include DataMapper::Resource
   property :description,  String
 end
 DataMapper.finalize
+
+WINDOW_CLOSE_DELAY = eval(ENV['WINDOW_CLOSE_DELAY'] || Setting.first(:name => "WindowCloseDelay").value)
+WINDOW_OPEN_DELAY  = eval(ENV['WINDOW_OPEN_DELAY']  || Setting.first(:name => "WindowOpenDelay").value)
+FINAL_TARGET_LATLON= ENV['FINAL_TARGET_LATLON']|| Setting.first(:name => "FinalTargetLatLon").value
+NEXT_TARGET_LATLON = ENV['NEXT_TARGET_LATLON'] || Setting.first(:name => "NextTargetLatLon").value
+ADMINS             = ENV['ADMINS']             || Setting.first(:name => "Admins").value
+
+use Rack::Session::Cookie, :secret => 'supers3cr3t'
+
 
 use OmniAuth::Builder do
   provider :open_id,  :name => 'openid',
@@ -67,15 +73,14 @@ get '/endcache' do
   open_64 = cookies[:openval]
   open_s  = Base64.decode64(open_64)
   open    = DateTime.parse(open_s)
-  closeDelay = Setting.first(:name => "WindowCloseDelay")
-  close   = open.to_time + eval(closeDelay.value)
+  close   = open.to_time + WINDOW_CLOSE_DELAY
 
   now = DateTime.now.to_datetime
   @now_s = now.strftime('%H:%M:%S')
 
   @open_s = open.strftime('%H:%M:%S')
   @close_s = close.strftime('%H:%M:%S')
-  @coords = ENV['FINAL_TARGET_LATLON']
+  @coords = FINAL_TARGET_LATLON
 
   if now.to_datetime < open.to_datetime
     slim :notyetdue
@@ -88,30 +93,44 @@ end
 
 post '/startcache' do
   now = DateTime.now.to_time
-  open    = (now + eval(ENV['WINDOW_OPEN_DELAY'])).to_datetime
+  open    = (now + WINDOW_OPEN_DELAY).to_datetime
   cookies[:openval] = Base64.encode64(open.to_s)
-  @coords = ENV['FINAL_TARGET_LATLON']
+  @coords = NEXT_TARGET_LATLON
   slim :startresponse
 end
 
-get '/settings' do
-  unless session && session[:email] && (ENV['ADMINMAILS'].include? session[:email])
-    halt 401, 'authentication required'
+get '/private/settings' do
+  unless session && session[:email] && (ADMINS.include? session[:email])
+    halt 401, '<a href="/auth/openid">authentication required</a>'
   end
   @user_name = (session[:email] == 'meliundeckes@gmail.com' && 'Eckes') || 'Harry'
   @settings = Setting.all
   slim :showsettings
 end
 
-post '/settings' do
-  unless session && session[:email] && (ENV['ADMINMAILS'].include? session[:email])
-    halt 401, 'authentication required'
+post '/private/settings' do
+  unless session && session[:email] && (ADMINS.include? session[:email])
+    halt 401, '<a href="/auth/openid">authentication required</a>'
   end
-  params.keys.each do |key|
-    s = Setting.get(key)
-    s.update( :value => params[key])
+  params.each do |key, value|
+    Setting.get(key).update(:value => value)
   end
-  redirect '/settings'
+  redirect '/private/settings'
+end
+
+get '/private/addsetting' do
+  unless session && session[:email] && (ADMINS.include? session[:email])
+    halt 401, '<a href="/auth/openid">authentication required</a>'
+  end
+  slim :addsetting
+end
+
+post '/private/addsetting' do
+  unless session && session[:email] && (ADMINS.include? session[:email])
+    halt 401, '<a href="/auth/openid">authentication required</a>'
+  end
+  Setting.create( name: params['setting_name'], value: params['setting_value'], description: params['setting_description'] )
+  redirect '/private/settings'
 end
 
 __END__
@@ -157,11 +176,11 @@ p Damit gehts leider nicht zum fantastischen letzten Ziel
 @@ doorisopen
 h1 Letzte Koordinaten
 h2 =@coords
-h4 =@close_s
+p Diese Information verschwindet um #{@close_s}
 
 @@ showsettings
 h1 Hi #{@user_name}, hier die Einstellungen
-form action="/settings" method="POST"
+form action="/private/settings" method="POST"
   table
     - @settings.each do |setting|
       tr
@@ -172,6 +191,29 @@ form action="/settings" method="POST"
         td
           label #{setting.description}
   input.button type="submit" value="Update Settings"
+hr
+a href='/private/addsetting' Add Setting
+
+@@addsetting
+h1 Add setting
+form action="/private/addsetting" method="POST"
+  table
+    tr
+      td
+        label for="setting_name" Setting Name
+      td
+        input id="setting_name" type="text" name="setting_name" value=""
+    tr
+      td
+        label for="setting_value" Setting Value
+      td
+        input id="setting_value" type="text" name="setting_value" value=""
+    tr
+      td
+        label for="setting_description" Setting Description
+      td
+        input id="setting_description" type="text" name="setting_description" value=""
+  input.button type="submit" value="Add Setting"
 
 @@ listsettings
 h1 Settings
