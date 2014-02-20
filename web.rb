@@ -35,15 +35,7 @@ end
 post '/auth/openid/callback' do
   auth_details = request.env['omniauth.auth']
   session[:email] = auth_details.info['email']
-  redirect '/settings'
-end
-
-get '/auth/openid/welcome' do
-  if session[:email]
-    redirect '/settings'
-  else
-    redirect '/auth/openid'
-  end
+  redirect '/private/settings'
 end
 
 get '/auth/failure' do
