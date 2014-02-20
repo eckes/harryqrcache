@@ -1,33 +1,32 @@
-# ruby-sample
+# Timed Geocaching Game
 
-This is a barebones Ruby app using the [Sinatra](http://www.sinatrarb.com) framework.
+This small web app is used for a geocaching game that uses smartphones
 
-## Running Locally
+## Basic Idea
 
-Asumming you have [Ruby](https://www.ruby-lang.org), [Bundler](http://bundler.io) and [Heroku Toolbelt](https://toolbelt.heroku.com) installed on your machine:
+The idea is to put some time pressure into geocaching.
 
-```sh
-git clone git@github.com:heroku/ruby-sample.git # or clone your own fork
-cd ruby-sample
-bundle
-foreman start
-```
+One scans a QR code on the beginning of the cache and receives a token along with the coordinates for the next target.
 
-Your app should now be running on [localhost:5000](http://localhost:5000/).
+As soon as the token is issued, time begins to run.
 
-## Deploying to Heroku
+There could be various stations between the first and the next-to-last.
 
-```
-heroku create
-git push heroku master
-heroku open
-```
+The challenge is to receive this next-to-last checkpoint within a defined time window. Only if you arrive within this time window, you'll receive the coordinates for the last checkpoint. If you're too soon, you'll have to wait; if you're too late, you won't get the coordinates for the last point.
 
-## Documentation
+## Tech stuff
 
-For more information about using Ruby on Heroku, see these Dev Center articles:
+The parameters of the app could be modified via the management interface available at '/private/settings'. 
 
-- [Ruby on Heroku](https://devcenter.heroku.com/categories/ruby)
-- [Getting Started with Ruby on Heroku](https://devcenter.heroku.com/articles/getting-started-with-ruby)
-- [Getting Started with Rails 4.x on Heroku](https://devcenter.heroku.com/articles/getting-started-with-rails4)
-- [Heroku Ruby Support](https://devcenter.heroku.com/articles/ruby-support)
+Authentication is done by means of OpenID via Google. 
+
+Settings are store in a PostgreSQL database or in environment variables.
+
+## Live
+
+This app runs on heroku: http://tranquil-gorge-3863.herokuapp.com
+
+## Ressources
+
+- [QR Code Generator](http://goqr.me/#t=url)
+- [Heroku](http://www.heroku.com)
