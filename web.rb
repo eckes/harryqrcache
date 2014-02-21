@@ -155,14 +155,16 @@ html
         padding-top: 5px;
         padding-bottom: 5px;
         font-weight: bold;
-        vertical-align: center;
         text-align: center;
         width: 100%;
+        font-family: monospace;
         background-color: #A4A4A4;}
+
       ul.navlist li{
-          display: inline;
-          list-style-type: none;
-          padding-right: 20px; }
+        display: inline;
+        list-style-type: none;
+        padding-left: 10px;
+        padding-right: 10px; }
   body
   - if @showfooter
     div.topbar
