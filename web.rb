@@ -114,6 +114,7 @@ before '/private/*' do
   unless session && session[:email] && (ADMINS.include? session[:email])
     halt 401, '<a href="/auth/openid">authentication required</a>'
   end
+  @showfooter = true
 end
 
 get '/private/settings' do
@@ -147,10 +148,32 @@ __END__
 @@ layout
 doctype 5
 html
-head
-meta charset="utf-8"
-body
-== yield
+  head
+    meta charset="utf-8"
+    css:
+      .topbar {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        font-weight: bold;
+        vertical-align: center;
+        text-align: center;
+        width: 100%;
+        background-color: #A4A4A4;}
+      ul.navlist li{
+          display: inline;
+          list-style-type: none;
+          padding-right: 20px; }
+  body
+  - if @showfooter
+    div.topbar
+      ul.navlist
+        li
+          a href='/private/addsetting' Add a setting
+        li
+          a href='/private/settings' Show settings
+        li 
+          a href='/' Start Page
+  == yield
 
 @@ start
 h1 Startseite
@@ -206,10 +229,6 @@ form action="/private/settings" method="POST"
         td
           label #{setting.description}
   input.button type="submit" value="Update Settings"
-hr
-a href='/private/addsetting' Add a setting |
-a href='/private/settings' Show settings |
-a href='/' Start Page
 
 @@addsetting
 h1 Add setting
@@ -231,10 +250,6 @@ form action="/private/addsetting" method="POST"
       td
         input id="setting_description" type="text" name="setting_description" value=""
   input.button type="submit" value="Add Setting"
-hr
-a href='/private/addsetting' Add a setting |
-a href='/private/settings' Show settings |
-a href='/' Start Page
 
 
 / vim: set sw=2 ts=2 enc=utf8:
