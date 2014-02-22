@@ -156,9 +156,12 @@ html
         padding-bottom: 5px;
         font-weight: bold;
         text-align: center;
-        width: 100%;
         font-family: monospace;
         background-color: #A4A4A4;}
+
+      css.topbar {
+        width: 100%;
+        }
 
       ul.topbar li{
         display: inline;
@@ -169,7 +172,8 @@ html
     div.topbar
       ul.topbar
         li
-          a href='https://github.com/eckes/harryqrcache' Fork me on GitHub
+          a href='https://github.com/eckes/harryqrcache'
+            img src='/images/GitHub-Mark-32px.png' height='16px' width='16px' title='Fork me on GitHub'
         - if @showtopbar
           li
             a href='/private/addsetting' Add a setting
