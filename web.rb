@@ -64,22 +64,22 @@ get '/startcache' do
 end
 
 get '/endcache' do
-  WINDOW_CLOSE_DELAY = eval(ENV['WINDOW_CLOSE_DELAY'] || Setting.first(:name => "WindowCloseDelay").value) unless defined? WINDOW_CLOSE_DELAY
-  FINAL_TARGET_LATLON= ENV['FINAL_TARGET_LATLON']|| Setting.first(:name => "FinalTargetLatLon").value unless defined? FINAL_TARGET_LATLON
+  window_close_delay = eval(ENV['WINDOW_CLOSE_DELAY'] || Setting.first(:name => "WindowCloseDelay").value)
+  final_target_latlon= ENV['FINAL_TARGET_LATLON']|| Setting.first(:name => "FinalTargetLatLon").value
   unless cookies && cookies[:openval]
     halt 412, '<a href="/">No cookie found, start again!</a>'
   end
   open_64 = cookies[:openval]
   open_s  = Base64.decode64(open_64)
   open    = DateTime.parse(open_s)
-  close   = open.to_time + WINDOW_CLOSE_DELAY
+  close   = open.to_time + window_close_delay
 
   now = DateTime.now.to_datetime
 
   @now_s    = now.strftime('%H:%M:%S')
   @open_s   = open.strftime('%H:%M:%S')
   @close_s  = close.strftime('%H:%M:%S')
-  @coords   = FINAL_TARGET_LATLON
+  @coords   = final_target_latlon
 
   if now.to_datetime < open.to_datetime
     slim :notyetdue
@@ -91,18 +91,18 @@ get '/endcache' do
 end
 
 post '/startcache' do
-  WINDOW_OPEN_DELAY  = eval(ENV['WINDOW_OPEN_DELAY']  || Setting.first(:name => "WindowOpenDelay").value) unless defined? WINDOW_OPEN_DELAY
-  NEXT_TARGET_LATLON = ENV['NEXT_TARGET_LATLON'] || Setting.first(:name => "NextTargetLatLon").value unless defined? NEXT_TARGET_LATLON
+  window_open_delay  = eval(ENV['WINDOW_OPEN_DELAY']  || Setting.first(:name => "WindowOpenDelay").value)
+  next_target_latlon = ENV['NEXT_TARGET_LATLON'] || Setting.first(:name => "NextTargetLatLon").value
   now = DateTime.now.to_time
-  open    = (now + WINDOW_OPEN_DELAY).to_datetime
+  open    = (now + window_open_delay).to_datetime
   cookies[:openval] = Base64.encode64(open.to_s)
   redirect '/cachestarted'
 end
 
 get '/cachestarted' do
   slim :startfailed unless cookies && cookies[:openval]
-  redirect '/startcache' unless defined? NEXT_TARGET_LATLON
-  @coords = NEXT_TARGET_LATLON
+  redirect '/startcache' unless defined? next_target_latlon
+  @coords = next_target_latlon
   slim :startresponse
 end
 
@@ -110,8 +110,8 @@ end
 # === PRIVATE URLS: Manage settings ========================================================================================
 # ==========================================================================================================================
 before '/private/*' do
-  ADMINS = (ENV['ADMINS'] || Setting.first(:name => "Admins").value) unless defined? ADMINS
-  unless session && session[:email] && (ADMINS.include? session[:email])
+  admins = (ENV['ADMINS'] || Setting.first(:name => "Admins").value)
+  unless session && session[:email] && (admins.include? session[:email])
     halt 401, '<a href="/auth/openid">authentication required</a>'
   end
   @showtopbar = true
