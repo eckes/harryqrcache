@@ -114,7 +114,7 @@ before '/private/*' do
   unless session && session[:email] && (ADMINS.include? session[:email])
     halt 401, '<a href="/auth/openid">authentication required</a>'
   end
-  @showfooter = true
+  @showtopbar = true
 end
 
 get '/private/settings' do
@@ -160,21 +160,23 @@ html
         font-family: monospace;
         background-color: #A4A4A4;}
 
-      ul.navlist li{
+      ul.topbar li{
         display: inline;
         list-style-type: none;
         padding-left: 10px;
         padding-right: 10px; }
   body
-  - if @showfooter
     div.topbar
-      ul.navlist
+      ul.topbar
         li
-          a href='/private/addsetting' Add a setting
-        li
-          a href='/private/settings' Show settings
-        li 
-          a href='/' Start Page
+          a href='https://github.com/eckes/harryqrcache' Fork me on GitHub
+        - if @showtopbar
+          li
+            a href='/private/addsetting' Add a setting
+          li
+            a href='/private/settings' Show settings
+          li 
+            a href='/' Start Page
   == yield
 
 @@ start
