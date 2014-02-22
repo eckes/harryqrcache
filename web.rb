@@ -92,7 +92,6 @@ end
 
 post '/startcache' do
   window_open_delay  = eval(ENV['WINDOW_OPEN_DELAY']  || Setting.first(:name => "WindowOpenDelay").value)
-  next_target_latlon = ENV['NEXT_TARGET_LATLON'] || Setting.first(:name => "NextTargetLatLon").value
   now = DateTime.now.to_time
   open    = (now + window_open_delay).to_datetime
   cookies[:openval] = Base64.encode64(open.to_s)
@@ -100,6 +99,7 @@ post '/startcache' do
 end
 
 get '/cachestarted' do
+  next_target_latlon = ENV['NEXT_TARGET_LATLON'] || Setting.first(:name => "NextTargetLatLon").value
   slim :startfailed unless cookies && cookies[:openval]
   redirect '/startcache' unless defined? next_target_latlon
   @coords = next_target_latlon
