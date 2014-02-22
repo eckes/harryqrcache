@@ -225,11 +225,13 @@ h1 Tor schon wieder geschlossen
 ul
   li Momentane Zeit: #{@now_s}
   li Tor wurde geschlossen um #{@close_s}
-p Damit gehts leider nicht zum fantastischen letzten Ziel
+p Sorry, Zeit nicht geschafft. Bitte zurück zum Start/Stage 1!
 
 @@ doorisopen
-h1 Letzte Koordinaten
-h2 =@coords
+h1 Glückwunsch!
+p Ihr habt es innerhalb der geforderten Zeit geschafft! Durchatmen!
+h2 Das Final findet Ihr bei
+h3 =@coords
 p Diese Information verschwindet um #{@close_s}
 
 @@ showsettings
