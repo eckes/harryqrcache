@@ -185,13 +185,20 @@ html
 
 @@ start
 h1 Startseite
-ul
-  li nach Klicken auf STARTEN startet ein Timer
-  li vor Ablauf dieses Timers müssen drei Ziele erreicht werden
-  li am dritten Ziel bekommt man die Koordinaten für den tollen Endpunkt
-  li wenn man zu früh am dritten Ziel ist, muss man warten (d.h. das Tor zum Endpunkt ist noch zu)
-  li wenn man zu spät am dritten Ziel ist, kriegt man die tollen Endkoordinaten nicht (d.h. das Tor zum Endpunkt ist schon wieder zu)
-h2 Alles Klar?
+
+h2 Herzlich willkommen zu Nerds, hurry up!
+
+p Bei Betätigung des unteren START Buttons bekommt Ihr die Koordinaten für die 2. Stage.
+
+h2 Problem!
+
+p Zeitgleich beginnt ein Timer zu laufen. Ihr habt ab Drücken des START-Buttons 2 Stunden Zeit, um die vorletzte Station zu erreichen (Zeitfenster 90&ndash;120 Minuten).  Dort erhaltet Ihr bei zeitgerechtem Erscheinen die Koordinaten fürs Final.
+
+p Solltet Ihr die Zeit überschreiten... Gehe zurück zu Los, gehen Sie direkt dorthin!
+
+p Viel Spaß und... 
+
+h2 Hurry up!
 form method="POST" action="startcache"
   input.button type="submit" value="STARTEN"
 
@@ -211,6 +218,7 @@ h1 Tor noch nicht offen
 ul
   li Momentane Zeit: #{@now_s}
   li Tor öffnet sich um #{@open_s}
+a href='/endcache' Aktualisieren
 
 @@ alreadygone
 h1 Tor schon wieder geschlossen
