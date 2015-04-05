@@ -134,6 +134,10 @@ get '/private/addsetting' do
   slim :addsetting
 end
 
+get '/private/alreadygone' do
+  slim :alreadygone
+end
+
 post '/private/addsetting' do
   Setting.create( name: params['setting_name'], value: params['setting_value'], description: params['setting_description'] )
   redirect '/private/settings'
@@ -226,6 +230,10 @@ ul
   li Momentane Zeit: #{@now_s}
   li Tor wurde geschlossen um #{@close_s}
 p Sorry, Zeit nicht geschafft. Bitte zurück zum Start/Stage 1!
+h2 ODER (Backup)
+ul
+  li N 50 06. Geburtsjahr des Preußen - BWW beider nach NNW zeigenden Schilder - 1218
+  li E 11 36. BWW beider nach W zeigenden Schilder + 250
 
 @@ doorisopen
 h1 Glückwunsch!
